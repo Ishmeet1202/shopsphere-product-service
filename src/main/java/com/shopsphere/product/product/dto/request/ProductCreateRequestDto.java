@@ -5,9 +5,11 @@ import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
-public class ProductSaveRequestDto {
+public class ProductCreateRequestDto {
     @NotBlank(message = "Product name cannot be blank.")
     @Size(min = 2, max = 100, message = "Product name must be between 2 and 100 characters.")
     private String name;
@@ -22,7 +24,7 @@ public class ProductSaveRequestDto {
 
     @NotNull(message = "Product price cannot be null.")
     @Positive(message = "Product price cannot be negative or zero.")
-    private Double price;
+    private BigDecimal price;
 
     @NotNull(message = "Product quantity cannot be null.")
     @PositiveOrZero(message = "Product quantity cannot be negative.")
