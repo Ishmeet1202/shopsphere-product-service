@@ -7,10 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,5 +20,13 @@ public class ProductController {
     public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductCreateRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productService.createProduct(request));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> getProductById(
+            @PathVariable(name = "id") String id
+    ) {
+      return ResponseEntity.status(HttpStatus.OK)
+              .body(productService.getProductById(id));
     }
 }
