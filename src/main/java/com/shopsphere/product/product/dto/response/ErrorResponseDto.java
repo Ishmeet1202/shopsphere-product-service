@@ -13,8 +13,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponseDto {
     private LocalDateTime timestamp;
-    private HttpStatus status;
+    private String status;
     private String error;
+    private String message;
     private List<String> validationErrors;
     private String path;
 }
