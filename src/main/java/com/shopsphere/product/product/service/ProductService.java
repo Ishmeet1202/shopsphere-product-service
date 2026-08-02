@@ -1,4 +1,4 @@
-package com.shopsphere.product.product.sevice;
+package com.shopsphere.product.product.service;
 
 import com.shopsphere.product.product.dto.request.ProductCreateRequestDto;
 import com.shopsphere.product.product.dto.response.ProductResponseDto;
