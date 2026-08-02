@@ -3,7 +3,6 @@ package com.shopsphere.product.product.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,8 +12,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponseDto {
     private LocalDateTime timestamp;
-    private HttpStatus status;
+    private int status;
     private String error;
+    private String message;
     private List<String> validationErrors;
     private String path;
 }
