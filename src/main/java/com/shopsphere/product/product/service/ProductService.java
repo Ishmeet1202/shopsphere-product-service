@@ -5,4 +5,6 @@ import com.shopsphere.product.product.dto.response.ProductResponseDto;
 
 public interface ProductService {
     ProductResponseDto createProduct(ProductCreateRequestDto  request);
+
+    ProductResponseDto getProductById(String id);
 }

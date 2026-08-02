@@ -1,5 +1,6 @@
 package com.shopsphere.product.product.service.impl;
 
+import com.shopsphere.product.exception.ProductNotFoundException;
 import com.shopsphere.product.product.dto.request.ProductCreateRequestDto;
 import com.shopsphere.product.product.dto.response.ProductResponseDto;
 import com.shopsphere.product.product.entity.Product;
@@ -17,6 +18,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    private final static String PRODUCT_NOT_FOUND_MESSAGE = "Product not found with id: ";
+
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
@@ -31,6 +34,15 @@ public class ProductServiceImpl implements ProductService {
 
         return productMapper.toProductResponseDto(product);
     }
+
+    @Override
+    public ProductResponseDto getProductById(String id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
+
+        return productMapper.toProductResponseDto(product);
+    }
+
 
     private void initializeNewProduct(Product product) {
         product.setStatus(
