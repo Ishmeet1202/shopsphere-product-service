@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Product extends AuditBaseEntity {
     @Id
