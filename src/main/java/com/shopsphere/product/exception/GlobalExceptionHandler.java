@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
 
     private final static String VALIDATION_ERROR = "VALIDATION_ERROR";
     private final static String INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
-    private final static String PRODUCT_NOT_FOUND_ERROR = "PRODUCT_NOT_FOUND_ERROR";
+    private final static String PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValid(
@@ -39,6 +39,7 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleProductNotFound(
             ProductNotFoundException ex,
             HttpServletRequest request
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
                 .body(buildErrorResponse(
                         LocalDateTime.now(),
                         HttpStatus.NOT_FOUND.value(),
-                        PRODUCT_NOT_FOUND_ERROR,
+                        PRODUCT_NOT_FOUND,
                         ex.getMessage(),
                         null,
                         request

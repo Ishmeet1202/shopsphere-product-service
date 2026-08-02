@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
-    private final static String PRODUCT_NOT_FOUND = "Product not found for this id: ";
+    private final static String PRODUCT_NOT_FOUND_MESSAGE = "Product not found with id: ";
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
@@ -38,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDto getProductById(String id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND + id));
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         return productMapper.toProductResponseDto(product);
     }
