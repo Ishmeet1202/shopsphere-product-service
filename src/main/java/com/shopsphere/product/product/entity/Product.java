@@ -2,12 +2,17 @@ package com.shopsphere.product.product.entity;
 
 import com.shopsphere.product.product.enums.Status;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 
 @Entity
 @Table(name = "products")
+@Getter
+@Setter
+@ToString
+@Builder
 public class Product extends AuditBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
