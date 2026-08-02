@@ -11,7 +11,11 @@ public class ProductMapper {
     public Product toProductEntity(ProductCreateRequestDto request) {
         return Product.builder()
                 .name(request.getName().trim())
-                .description(request.getDescription().trim())
+                .description(
+                        request.getDescription() != null
+                                ? request.getDescription()
+                                : null
+                )
                 .brand(request.getBrand().trim())
                 .category(request.getCategory().trim())
                 .price(request.getPrice())

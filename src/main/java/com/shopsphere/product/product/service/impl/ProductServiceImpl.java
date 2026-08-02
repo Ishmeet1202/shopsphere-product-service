@@ -24,14 +24,19 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponseDto createProduct(ProductCreateRequestDto request) {
         Product product = productMapper.toProductEntity(request);
-        product.setStatus(
-                request.getQuantity() > 0 ? Status.ACTIVE : Status.OUT_OF_STOCK
-        );
-        product.setSku(generateSku());
+
+        initializeNewProduct(product);
 
         product = productRepository.save(product);
 
         return productMapper.toProductResponseDto(product);
+    }
+
+    private void initializeNewProduct(Product product) {
+        product.setStatus(
+                product.getQuantity() > 0 ? Status.ACTIVE : Status.OUT_OF_STOCK
+        );
+        product.setSku(generateSku());
     }
 
     private String generateSku() {
