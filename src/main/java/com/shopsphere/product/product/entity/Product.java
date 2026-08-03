@@ -47,6 +47,6 @@ public class Product extends AuditBaseEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "is_deleted", columnDefinition = "BOOLEAN")
-    private Boolean isDeleted;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
 }
