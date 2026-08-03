@@ -51,4 +51,15 @@ public class ProductController {
                         direction
                 ));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> updateProduct(
+            @PathVariable(name = "id") String id,
+            @Valid @RequestBody ProductCreateRequestDto request
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(productService.updateProduct(
+                        id, request
+                ));
+    }
 }

@@ -83,12 +83,31 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
+
+        productMapper.updateProductEntity(product, request);
+
+        updateProductStatus(product);
+
+        product = productRepository.save(product);
+
+        return productMapper.toProductResponseDto(product);
+    }
+
 
     private void initializeNewProduct(Product product) {
+        product.setSku(generateSku());
+        updateProductStatus(product);
+    }
+
+    private void updateProductStatus(Product product) {
         product.setStatus(
                 product.getQuantity() > 0 ? Status.ACTIVE : Status.OUT_OF_STOCK
         );
-        product.setSku(generateSku());
     }
 
     private String generateSku() {

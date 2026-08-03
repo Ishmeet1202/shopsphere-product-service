@@ -15,4 +15,6 @@ public interface ProductService {
             String sortBy,
             String direction
     );
+
+    ProductResponseDto updateProduct(String id, ProductCreateRequestDto request);
 }
