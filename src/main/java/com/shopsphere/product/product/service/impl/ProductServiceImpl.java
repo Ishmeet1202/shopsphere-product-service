@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto getProductById(String id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         return productMapper.toProductResponseDto(product);
@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
                 ? PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, fieldName))
                 : PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, fieldName));
 
-        Page<Product> products = productRepository.findAll(pageable);
+        Page<Product> products = productRepository.findAllAndIsDeletedFalse(pageable);
         Page<ProductResponseDto> productResponseDtoList = products.map(productMapper::toProductResponseDto);
 
         return PageResponseDto.<ProductResponseDto>builder()
@@ -86,7 +86,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         productMapper.updateProductEntity(product, request);
@@ -98,9 +98,21 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toProductResponseDto(product);
     }
 
+    @Override
+    @Transactional
+    public void deleteProduct(String id) {
+        Product product = productRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
+
+        product.setIsDeleted(true);
+
+        productRepository.save(product);
+    }
+
 
     private void initializeNewProduct(Product product) {
         product.setSku(generateSku());
+        product.setIsDeleted(false);
         updateProductStatus(product);
     }
 
