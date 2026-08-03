@@ -1,7 +1,9 @@
 package com.shopsphere.product.product.service.impl;
 
+import com.shopsphere.product.exception.InvalidSortingFieldException;
 import com.shopsphere.product.exception.ProductNotFoundException;
 import com.shopsphere.product.product.dto.request.ProductCreateRequestDto;
+import com.shopsphere.product.product.dto.response.PageResponseDto;
 import com.shopsphere.product.product.dto.response.ProductResponseDto;
 import com.shopsphere.product.product.entity.Product;
 import com.shopsphere.product.product.enums.Status;
@@ -9,9 +11,15 @@ import com.shopsphere.product.product.mapper.ProductMapper;
 import com.shopsphere.product.product.repository.ProductRepository;
 import com.shopsphere.product.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -19,6 +27,7 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private final static String PRODUCT_NOT_FOUND_MESSAGE = "Product not found with id: ";
+    private final static String INVALID_SORTING_FIELD_MESSAGE = "Invalid sorting field: ";
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
@@ -41,6 +50,41 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         return productMapper.toProductResponseDto(product);
+    }
+
+    @Override
+    public PageResponseDto<ProductResponseDto> getAllProducts(
+            Integer page,
+            Integer size,
+            String sortBy,
+            String direction
+    ) {
+        Map<String, String> fields = Map.of(
+                "name","name",
+                "status","status"
+        );
+
+        String fieldName = sortBy.toLowerCase();
+
+        if (!fields.containsKey(fieldName)) {
+            throw new InvalidSortingFieldException(INVALID_SORTING_FIELD_MESSAGE + fields);
+        }
+
+        Pageable pageable = direction != null && direction.equalsIgnoreCase("desc")
+                ? PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, fieldName))
+                : PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, fieldName));
+
+        Page<Product> products = productRepository.findAll(pageable);
+        Page<ProductResponseDto> productResponseDtoList = products.map(product -> productMapper.toProductResponseDto(product));
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(productResponseDtoList.getContent())
+                .page(productResponseDtoList.getNumber())
+                .size(productResponseDtoList.getSize())
+                .totalElements(productResponseDtoList.getTotalElements())
+                .totalPages(productResponseDtoList.getTotalPages())
+                .last(productResponseDtoList.isLast())
+                .build();
     }
 
 
