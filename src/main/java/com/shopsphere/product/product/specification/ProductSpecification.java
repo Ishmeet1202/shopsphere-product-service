@@ -4,6 +4,7 @@ import com.shopsphere.product.product.dto.request.ProductSearchRequestDto;
 import com.shopsphere.product.product.entity.Product;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,25 +14,34 @@ public class ProductSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (searchRequest.getName() != null) {
+            if (StringUtils.hasText(searchRequest.getName())) {
                 predicates.add(
-                        cb.equal(root.get("name"), searchRequest.getName())
+                        cb.like(
+                                cb.lower(root.get("name")),
+                                "%" + searchRequest.getName().toLowerCase() + "%"
+                        )
                 );
             }
 
-            if (searchRequest.getBrand() != null) {
+            if (StringUtils.hasText(searchRequest.getBrand())) {
                 predicates.add(
-                        cb.equal(root.get("brand"), searchRequest.getBrand())
+                        cb.like(
+                                cb.lower(root.get("brand")),
+                                "%" + searchRequest.getBrand().toLowerCase() + "%"
+                        )
                 );
             }
 
-            if (searchRequest.getName() != null) {
+            if (StringUtils.hasText(searchRequest.getCategory())) {
                 predicates.add(
-                        cb.equal(root.get("category"), searchRequest.getCategory())
+                        cb.like(
+                                cb.lower(root.get("category")),
+                                "%" + searchRequest.getCategory().toLowerCase() + "%"
+                        )
                 );
             }
 
-            if (searchRequest.getName() != null) {
+            if (searchRequest.getStatus() != null) {
                 predicates.add(
                         cb.equal(root.get("status"), searchRequest.getStatus())
                 );

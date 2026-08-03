@@ -1,5 +1,6 @@
 package com.shopsphere.product.product.dto.request;
 
+import com.shopsphere.product.product.enums.Status;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -12,7 +13,7 @@ public class ProductSearchRequestDto {
     private String name;
     private String brand;
     private String category;
-    private String status;
+    private Status status;
 
     @PositiveOrZero(message = "Page must be zero or positive")
     private Integer page = 0;
