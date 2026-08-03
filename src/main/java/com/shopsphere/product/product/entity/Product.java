@@ -48,5 +48,5 @@ public class Product extends AuditBaseEntity {
     private Status status;
 
     @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
+    private boolean deleted;
 }

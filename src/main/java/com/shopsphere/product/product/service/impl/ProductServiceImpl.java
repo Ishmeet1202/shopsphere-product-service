@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto getProductById(String id) {
-        Product product = productRepository.findByIdAndIsDeletedFalse(id)
+        Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         return productMapper.toProductResponseDto(product);
@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
                 ? PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, fieldName))
                 : PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, fieldName));
 
-        Page<Product> products = productRepository.findAllAndIsDeletedFalse(pageable);
+        Page<Product> products = productRepository.findByDeletedFalse(pageable);
         Page<ProductResponseDto> productResponseDtoList = products.map(productMapper::toProductResponseDto);
 
         return PageResponseDto.<ProductResponseDto>builder()
@@ -86,7 +86,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
-        Product product = productRepository.findByIdAndIsDeletedFalse(id)
+        Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         productMapper.updateProductEntity(product, request);
@@ -101,10 +101,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void deleteProduct(String id) {
-        Product product = productRepository.findByIdAndIsDeletedFalse(id)
+        Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
-        product.setIsDeleted(true);
+        product.setDeleted(true);
 
         productRepository.save(product);
     }
@@ -112,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
 
     private void initializeNewProduct(Product product) {
         product.setSku(generateSku());
-        product.setIsDeleted(false);
+        product.setDeleted(false);
         updateProductStatus(product);
     }
 
