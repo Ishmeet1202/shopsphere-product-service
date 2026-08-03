@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/products")
@@ -60,6 +62,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(productService.updateProduct(
                         id, request
+                ));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteProduct(
+            @PathVariable(name = "id") String id
+    ) {
+        productService.deleteProduct(id);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of(
+                        "message", "Product deleted successfully"
                 ));
     }
 }

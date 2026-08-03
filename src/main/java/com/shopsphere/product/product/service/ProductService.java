@@ -17,4 +17,6 @@ public interface ProductService {
     );
 
     ProductResponseDto updateProduct(String id, ProductCreateRequestDto request);
+
+    void deleteProduct(String id);
 }
