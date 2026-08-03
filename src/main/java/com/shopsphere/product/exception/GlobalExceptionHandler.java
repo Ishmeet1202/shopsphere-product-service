@@ -18,6 +18,7 @@ public class GlobalExceptionHandler {
     private final static String VALIDATION_ERROR = "VALIDATION_ERROR";
     private final static String INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
     private final static String PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND";
+    private final static String INVALID_SORTING_FIELD = "INVALID_SORTING_FIELD";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValid(
@@ -49,6 +50,22 @@ public class GlobalExceptionHandler {
                         LocalDateTime.now(),
                         HttpStatus.NOT_FOUND.value(),
                         PRODUCT_NOT_FOUND,
+                        ex.getMessage(),
+                        null,
+                        request
+                ));
+    }
+
+    @ExceptionHandler(InvalidSortingFieldException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidSortingField(
+            InvalidSortingFieldException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        INVALID_SORTING_FIELD,
                         ex.getMessage(),
                         null,
                         request
