@@ -1,10 +1,13 @@
 package com.shopsphere.product.product.controller;
 
 import com.shopsphere.product.product.dto.request.ProductCreateRequestDto;
+import com.shopsphere.product.product.dto.request.ProductSearchRequestDto;
 import com.shopsphere.product.product.dto.response.PageResponseDto;
 import com.shopsphere.product.product.dto.response.ProductResponseDto;
 import com.shopsphere.product.product.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,7 +43,8 @@ public class ProductController {
             @PositiveOrZero(message = "Page cannot be negative.")
             Integer page,
             @RequestParam(name = "size", defaultValue = "10")
-            @PositiveOrZero(message = "Size cannot be negative.")
+            @Positive(message = "Size cannot be negative or zero.")
+            @Max(value = 100, message = "Maximum page size is 100")
             Integer size,
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
             @RequestParam(name = "direction", defaultValue = "asc") String direction
@@ -51,6 +55,16 @@ public class ProductController {
                         size,
                         sortBy,
                         direction
+                ));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<PageResponseDto<ProductResponseDto>> searchProducts(
+            @Valid ProductSearchRequestDto searchRequest
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(productService.searchProducts(
+                        searchRequest
                 ));
     }
 
