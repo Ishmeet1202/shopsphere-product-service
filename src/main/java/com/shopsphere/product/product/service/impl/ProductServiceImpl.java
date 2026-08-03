@@ -3,6 +3,7 @@ package com.shopsphere.product.product.service.impl;
 import com.shopsphere.product.exception.InvalidSortingFieldException;
 import com.shopsphere.product.exception.ProductNotFoundException;
 import com.shopsphere.product.product.dto.request.ProductCreateRequestDto;
+import com.shopsphere.product.product.dto.request.ProductSearchRequestDto;
 import com.shopsphere.product.product.dto.response.PageResponseDto;
 import com.shopsphere.product.product.dto.response.ProductResponseDto;
 import com.shopsphere.product.product.entity.Product;
@@ -10,11 +11,13 @@ import com.shopsphere.product.product.enums.Status;
 import com.shopsphere.product.product.mapper.ProductMapper;
 import com.shopsphere.product.product.repository.ProductRepository;
 import com.shopsphere.product.product.service.ProductService;
+import com.shopsphere.product.product.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,6 +83,33 @@ public class ProductServiceImpl implements ProductService {
                 .totalElements(productResponseDtoList.getTotalElements())
                 .totalPages(productResponseDtoList.getTotalPages())
                 .last(productResponseDtoList.isLast())
+                .build();
+    }
+
+    @Override
+    public PageResponseDto<ProductResponseDto> searchProducts(ProductSearchRequestDto searchRequest) {
+        String fieldName = searchRequest.getSortBy().toLowerCase();
+
+        if (!ALLOWED_SORTING_FIELDS.contains(fieldName)) {
+            throw new InvalidSortingFieldException(INVALID_SORTING_FIELD_MESSAGE + fieldName);
+        }
+
+        Pageable pageable = searchRequest.getDirection().equalsIgnoreCase("desc")
+                ? PageRequest.of(searchRequest.getPage(), searchRequest.getSize(), Sort.by(Sort.Direction.DESC, fieldName))
+                : PageRequest.of(searchRequest.getPage(), searchRequest.getSize(), Sort.by(Sort.Direction.ASC, fieldName));
+
+        Specification<Product> productSpecification = ProductSpecification.filter(searchRequest);
+
+        Page<Product> products = productRepository.findAll(productSpecification, pageable);
+        Page<ProductResponseDto> productResponsePages = products.map(productMapper::toProductResponseDto);
+
+        return PageResponseDto.<ProductResponseDto>builder()
+                .content(productResponsePages.getContent())
+                .page(productResponsePages.getNumber())
+                .size(productResponsePages.getSize())
+                .totalElements(productResponsePages.getTotalElements())
+                .totalPages(productResponsePages.getTotalPages())
+                .last(productResponsePages.isLast())
                 .build();
     }
 

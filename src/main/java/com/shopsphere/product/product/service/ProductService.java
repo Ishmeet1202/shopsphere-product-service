@@ -1,6 +1,7 @@
 package com.shopsphere.product.product.service;
 
 import com.shopsphere.product.product.dto.request.ProductCreateRequestDto;
+import com.shopsphere.product.product.dto.request.ProductSearchRequestDto;
 import com.shopsphere.product.product.dto.response.PageResponseDto;
 import com.shopsphere.product.product.dto.response.ProductResponseDto;
 
@@ -14,6 +15,10 @@ public interface ProductService {
             Integer size,
             String sortBy,
             String direction
+    );
+
+    PageResponseDto<ProductResponseDto> searchProducts(
+            ProductSearchRequestDto searchRequest
     );
 
     ProductResponseDto updateProduct(String id, ProductCreateRequestDto request);
