@@ -18,8 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -28,6 +27,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final static String PRODUCT_NOT_FOUND_MESSAGE = "Product not found with id: ";
     private final static String INVALID_SORTING_FIELD_MESSAGE = "Invalid sorting field: ";
+    private final static Set<String> ALLOWED_SORTING_FIELDS = Set.of("name", "status");
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
@@ -59,23 +59,19 @@ public class ProductServiceImpl implements ProductService {
             String sortBy,
             String direction
     ) {
-        Map<String, String> fields = Map.of(
-                "name","name",
-                "status","status"
-        );
 
         String fieldName = sortBy.toLowerCase();
 
-        if (!fields.containsKey(fieldName)) {
-            throw new InvalidSortingFieldException(INVALID_SORTING_FIELD_MESSAGE + fields);
+        if (!ALLOWED_SORTING_FIELDS.contains(fieldName)) {
+            throw new InvalidSortingFieldException(INVALID_SORTING_FIELD_MESSAGE + fieldName);
         }
 
-        Pageable pageable = direction != null && direction.equalsIgnoreCase("desc")
+        Pageable pageable = direction.equalsIgnoreCase("desc")
                 ? PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, fieldName))
                 : PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, fieldName));
 
         Page<Product> products = productRepository.findAll(pageable);
-        Page<ProductResponseDto> productResponseDtoList = products.map(product -> productMapper.toProductResponseDto(product));
+        Page<ProductResponseDto> productResponseDtoList = products.map(productMapper::toProductResponseDto);
 
         return PageResponseDto.<ProductResponseDto>builder()
                 .content(productResponseDtoList.getContent())

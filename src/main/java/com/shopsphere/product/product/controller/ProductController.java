@@ -43,6 +43,12 @@ public class ProductController {
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
             @RequestParam(name = "direction", defaultValue = "asc") String direction
     ) {
-        return null;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(productService.getAllProducts(
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                ));
     }
 }
