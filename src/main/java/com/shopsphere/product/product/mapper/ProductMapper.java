@@ -20,6 +20,7 @@ public class ProductMapper {
                 .category(request.getCategory().trim())
                 .price(request.getPrice())
                 .quantity(request.getQuantity())
+                .currency(request.getCurrency())
                 .build();
     }
 
@@ -30,5 +31,18 @@ public class ProductMapper {
                 .sku(product.getSku())
                 .status(product.getStatus())
                 .build();
+    }
+
+    public void updateProductEntity(Product product, ProductCreateRequestDto request) {
+        product.setName(request.getName());
+        product.setDescription(
+                request.getDescription() != null
+                ? request.getDescription() : null
+        );
+        product.setBrand(request.getBrand());
+        product.setCategory(request.getCategory());
+        product.setPrice(request.getPrice());
+        product.setQuantity(request.getQuantity());
+        product.setCurrency(request.getCurrency());
     }
 }
