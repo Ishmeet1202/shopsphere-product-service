@@ -13,14 +13,14 @@ public class ProductMapper {
                 .name(request.getName().trim())
                 .description(
                         request.getDescription() != null
-                                ? request.getDescription()
+                                ? request.getDescription().trim()
                                 : null
                 )
                 .brand(request.getBrand().trim())
                 .category(request.getCategory().trim())
                 .price(request.getPrice())
                 .quantity(request.getQuantity())
-                .currency(request.getCurrency())
+                .currency(request.getCurrency().trim())
                 .build();
     }
 
@@ -34,15 +34,16 @@ public class ProductMapper {
     }
 
     public void updateProductEntity(Product product, ProductCreateRequestDto request) {
-        product.setName(request.getName());
+        product.setName(request.getName().trim());
         product.setDescription(
                 request.getDescription() != null
-                ? request.getDescription() : null
+                        ? request.getDescription().trim()
+                        : null
         );
-        product.setBrand(request.getBrand());
-        product.setCategory(request.getCategory());
+        product.setBrand(request.getBrand().trim());
+        product.setCategory(request.getCategory().trim());
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
-        product.setCurrency(request.getCurrency());
+        product.setCurrency(request.getCurrency().trim());
     }
 }
