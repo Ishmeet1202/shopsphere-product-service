@@ -29,9 +29,8 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductCreateRequestDto request) {
-        LOGGER.info("createProduct request: name={}", request.getName());
         ProductResponseDto response = productService.createProduct(request);
-        LOGGER.info("Product created id={}", response.getId());
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
     }
@@ -40,9 +39,8 @@ public class ProductController {
     public ResponseEntity<ProductResponseDto> getProductById(
             @PathVariable(name = "id") String id
     ) {
-        LOGGER.info("getProductById called with id={}", id);
         ProductResponseDto response = productService.getProductById(id);
-        LOGGER.info("getProductById returning id={}", response.getId());
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
     }
@@ -59,14 +57,12 @@ public class ProductController {
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
             @RequestParam(name = "direction", defaultValue = "asc") String direction
     ) {
-        LOGGER.info("getAllProducts called page={}, size={}, sortBy={}, direction={}", page, size, sortBy, direction);
         PageResponseDto<ProductResponseDto> response = productService.getAllProducts(
                 page,
                 size,
                 sortBy,
                 direction
         );
-        LOGGER.info("getAllProducts returned {} items, page {}/{}", response.getContent().size(), response.getPage(), response.getTotalPages());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
     }
@@ -75,12 +71,9 @@ public class ProductController {
     public ResponseEntity<PageResponseDto<ProductResponseDto>> searchProducts(
             @Valid ProductSearchRequestDto searchRequest
     ) {
-        LOGGER.info("searchProducts called: term={}, page={}, size={}, sortBy={}, direction={}",
-                searchRequest.getName(), searchRequest.getPage(), searchRequest.getSize(), searchRequest.getSortBy(), searchRequest.getDirection());
         PageResponseDto<ProductResponseDto> response = productService.searchProducts(
                 searchRequest
         );
-        LOGGER.info("searchProducts returned {} items, page {}/{}", response.getContent().size(), response.getPage(), response.getTotalPages());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
     }
@@ -90,11 +83,9 @@ public class ProductController {
             @PathVariable(name = "id") String id,
             @Valid @RequestBody ProductCreateRequestDto request
     ) {
-        LOGGER.info("updateProduct called id={}, name={}", id, request.getName());
         ProductResponseDto response = productService.updateProduct(
                 id, request
         );
-        LOGGER.info("updateProduct succeeded id={}", response.getId());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
     }
@@ -103,9 +94,7 @@ public class ProductController {
     public ResponseEntity<Map<String, String>> deleteProduct(
             @PathVariable(name = "id") String id
     ) {
-        LOGGER.info("deleteProduct called id={}", id);
         productService.deleteProduct(id);
-        LOGGER.info("deleteProduct completed id={}", id);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Map.of(
