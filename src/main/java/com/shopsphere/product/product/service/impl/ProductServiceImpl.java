@@ -57,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Cacheable(
             cacheNames = "products",
-            key = "'products:' + #id"
+            key = "#id"
     )
     public ProductResponseDto getProductById(String id) {
         Product product = productRepository.findByIdAndDeletedFalse(id)
@@ -133,7 +133,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @CacheEvict(
             cacheNames = "products",
-            key = "'products:' + #id"
+            key = "'#id"
     )
     public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
         LOGGER.info("updateProduct called id={}, name={}", id, request.getName());
@@ -152,7 +152,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @CacheEvict(
             cacheNames = "products",
-            key = "'products:' + #id"
+            key = "#id"
     )
     @Transactional
     public void deleteProduct(String id) {
