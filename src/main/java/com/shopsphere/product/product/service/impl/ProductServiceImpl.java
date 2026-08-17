@@ -13,6 +13,10 @@ import com.shopsphere.product.product.repository.ProductRepository;
 import com.shopsphere.product.product.service.ProductService;
 import com.shopsphere.product.product.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +32,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(ProductServiceImpl.class);
+
     private final static String PRODUCT_NOT_FOUND_MESSAGE = "Product not found with id: ";
     private final static String INVALID_SORTING_FIELD_MESSAGE = "Invalid sorting field: ";
     private final static Set<String> ALLOWED_SORTING_FIELDS = Set.of("name", "status");
@@ -38,19 +44,26 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto createProduct(ProductCreateRequestDto request) {
+        LOGGER.info("createProduct: name={}, brand={}, category={}", request.getName(), request.getBrand(), request.getCategory());
         Product product = productMapper.toProductEntity(request);
 
         initializeNewProduct(product);
 
         product = productRepository.save(product);
-
+        LOGGER.info("createProduct: saved product id={}, sku={}", product.getId(), product.getSku());
         return productMapper.toProductResponseDto(product);
     }
 
     @Override
+    @Cacheable(
+            cacheNames = "products",
+            key = "'products:' + #id"
+    )
     public ProductResponseDto getProductById(String id) {
         Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
+
+        LOGGER.info("Product info fetched for id: {}", id);
 
         return productMapper.toProductResponseDto(product);
     }
@@ -62,10 +75,11 @@ public class ProductServiceImpl implements ProductService {
             String sortBy,
             String direction
     ) {
-
+        LOGGER.info("getAllProducts: page={}, size={}, sortBy={}, direction={}", page, size, sortBy, direction);
         String fieldName = sortBy.toLowerCase();
 
         if (!ALLOWED_SORTING_FIELDS.contains(fieldName)) {
+            LOGGER.warn("Invalid sorting field requested: {}", fieldName);
             throw new InvalidSortingFieldException(INVALID_SORTING_FIELD_MESSAGE + fieldName);
         }
 
@@ -75,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
 
         Page<Product> products = productRepository.findByDeletedFalse(pageable);
         Page<ProductResponseDto> productResponseDtoList = products.map(productMapper::toProductResponseDto);
-
+        LOGGER.info("getAllProducts: found {} totalElements={}, totalPages={}", productResponseDtoList.getNumberOfElements(), productResponseDtoList.getTotalElements(), productResponseDtoList.getTotalPages());
         return PageResponseDto.<ProductResponseDto>builder()
                 .content(productResponseDtoList.getContent())
                 .page(productResponseDtoList.getNumber())
@@ -88,9 +102,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponseDto<ProductResponseDto> searchProducts(ProductSearchRequestDto searchRequest) {
+        LOGGER.info("searchProducts: name={}, page={}, size={}, sortBy={}, direction={}", searchRequest.getName(), searchRequest.getPage(), searchRequest.getSize(), searchRequest.getSortBy(), searchRequest.getDirection());
         String fieldName = searchRequest.getSortBy().toLowerCase();
 
         if (!ALLOWED_SORTING_FIELDS.contains(fieldName)) {
+            LOGGER.warn("Invalid sorting field in search: {}", fieldName);
             throw new InvalidSortingFieldException(INVALID_SORTING_FIELD_MESSAGE + fieldName);
         }
 
@@ -102,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
 
         Page<Product> products = productRepository.findAll(productSpecification, pageable);
         Page<ProductResponseDto> productResponsePages = products.map(productMapper::toProductResponseDto);
-
+        LOGGER.info("searchProducts: returned {} items, totalElements={}", productResponsePages.getNumberOfElements(), productResponsePages.getTotalElements());
         return PageResponseDto.<ProductResponseDto>builder()
                 .content(productResponsePages.getContent())
                 .page(productResponsePages.getNumber())
@@ -115,7 +131,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(
+            cacheNames = "products",
+            key = "'products:' + #id"
+    )
     public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
+        LOGGER.info("updateProduct called id={}, name={}", id, request.getName());
         Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
@@ -124,19 +145,25 @@ public class ProductServiceImpl implements ProductService {
         updateProductStatus(product);
 
         product = productRepository.save(product);
-
+        LOGGER.info("updateProduct saved id={}, status={}", product.getId(), product.getStatus());
         return productMapper.toProductResponseDto(product);
     }
 
     @Override
+    @CacheEvict(
+            cacheNames = "products",
+            key = "'products:' + #id"
+    )
     @Transactional
     public void deleteProduct(String id) {
+        LOGGER.info("deleteProduct called id={}", id);
         Product product = productRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         product.setDeleted(true);
 
         productRepository.save(product);
+        LOGGER.info("deleteProduct completed id={}", id);
     }
 
 
