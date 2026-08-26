@@ -12,6 +12,7 @@ import com.shopsphere.product.product.mapper.ProductMapper;
 import com.shopsphere.product.product.repository.ProductRepository;
 import com.shopsphere.product.product.service.ProductService;
 import com.shopsphere.product.product.specification.ProductSpecification;
+import com.shopsphere.product.tenant.context.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,26 +45,28 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto createProduct(ProductCreateRequestDto request) {
-        LOGGER.info("createProduct: name={}, brand={}, category={}", request.getName(), request.getBrand(), request.getCategory());
+        String tenantId = TenantContext.requireTenantId();
+        LOGGER.info("createProduct: name={}, brand={}, category={}, tenantId={}", request.getName(), request.getBrand(), request.getCategory(), tenantId);
         Product product = productMapper.toProductEntity(request);
 
-        initializeNewProduct(product);
+        initializeNewProduct(product, tenantId);
 
         product = productRepository.save(product);
-        LOGGER.info("createProduct: saved product id={}, sku={}", product.getId(), product.getSku());
+        LOGGER.info("createProduct: saved product id={}, sku={}, tenantId={}", product.getId(), product.getSku(), tenantId);
         return productMapper.toProductResponseDto(product);
     }
 
     @Override
     @Cacheable(
             cacheNames = "products",
-            key = "#id"
+            key = "T(com.shopsphere.product.tenant.cache.TenantCacheKey).product(#id)"
     )
     public ProductResponseDto getProductById(String id) {
-        Product product = productRepository.findByIdAndDeletedFalse(id)
+        String tenantId = TenantContext.requireTenantId();
+        Product product = productRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
-        LOGGER.info("Product info fetched for id: {}", id);
+        LOGGER.info("Product info fetched for id: {}, tenantId: {}", id, tenantId);
 
         return productMapper.toProductResponseDto(product);
     }
@@ -75,7 +78,8 @@ public class ProductServiceImpl implements ProductService {
             String sortBy,
             String direction
     ) {
-        LOGGER.info("getAllProducts: page={}, size={}, sortBy={}, direction={}", page, size, sortBy, direction);
+        String tenantId = TenantContext.requireTenantId();
+        LOGGER.info("getAllProducts: page={}, size={}, sortBy={}, direction={}, tenantId={}", page, size, sortBy, direction, tenantId);
         String fieldName = sortBy.toLowerCase();
 
         if (!ALLOWED_SORTING_FIELDS.contains(fieldName)) {
@@ -87,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
                 ? PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, fieldName))
                 : PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, fieldName));
 
-        Page<Product> products = productRepository.findByDeletedFalse(pageable);
+        Page<Product> products = productRepository.findByTenantIdAndDeletedFalse(tenantId, pageable);
         Page<ProductResponseDto> productResponseDtoList = products.map(productMapper::toProductResponseDto);
         LOGGER.info("getAllProducts: found {} totalElements={}, totalPages={}", productResponseDtoList.getNumberOfElements(), productResponseDtoList.getTotalElements(), productResponseDtoList.getTotalPages());
         return PageResponseDto.<ProductResponseDto>builder()
@@ -102,7 +106,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponseDto<ProductResponseDto> searchProducts(ProductSearchRequestDto searchRequest) {
-        LOGGER.info("searchProducts: name={}, page={}, size={}, sortBy={}, direction={}", searchRequest.getName(), searchRequest.getPage(), searchRequest.getSize(), searchRequest.getSortBy(), searchRequest.getDirection());
+        String tenantId = TenantContext.requireTenantId();
+        LOGGER.info("searchProducts: name={}, page={}, size={}, sortBy={}, direction={}, tenantId={}", searchRequest.getName(), searchRequest.getPage(), searchRequest.getSize(), searchRequest.getSortBy(), searchRequest.getDirection(), tenantId);
         String fieldName = searchRequest.getSortBy().toLowerCase();
 
         if (!ALLOWED_SORTING_FIELDS.contains(fieldName)) {
@@ -133,11 +138,12 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @CacheEvict(
             cacheNames = "products",
-            key = "'#id"
+            key = "T(com.shopsphere.product.tenant.cache.TenantCacheKey).product(#id)"
     )
     public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
-        LOGGER.info("updateProduct called id={}, name={}", id, request.getName());
-        Product product = productRepository.findByIdAndDeletedFalse(id)
+        String tenantId = TenantContext.requireTenantId();
+        LOGGER.info("updateProduct called id={}, name={}, tenantId={}", id, request.getName(), tenantId);
+        Product product = productRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         productMapper.updateProductEntity(product, request);
@@ -145,31 +151,33 @@ public class ProductServiceImpl implements ProductService {
         updateProductStatus(product);
 
         product = productRepository.save(product);
-        LOGGER.info("updateProduct saved id={}, status={}", product.getId(), product.getStatus());
+        LOGGER.info("updateProduct saved id={}, status={}, tenantId={}", product.getId(), product.getStatus(), tenantId);
         return productMapper.toProductResponseDto(product);
     }
 
     @Override
     @CacheEvict(
             cacheNames = "products",
-            key = "#id"
+            key = "T(com.shopsphere.product.tenant.cache.TenantCacheKey).product(#id)"
     )
     @Transactional
     public void deleteProduct(String id) {
-        LOGGER.info("deleteProduct called id={}", id);
-        Product product = productRepository.findByIdAndDeletedFalse(id)
+        String tenantId = TenantContext.requireTenantId();
+        LOGGER.info("deleteProduct called id={}, tenantId={}", id, tenantId);
+        Product product = productRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
         product.setDeleted(true);
 
         productRepository.save(product);
-        LOGGER.info("deleteProduct completed id={}", id);
+        LOGGER.info("deleteProduct completed id={}, tenantId={}", id, tenantId);
     }
 
 
-    private void initializeNewProduct(Product product) {
+    private void initializeNewProduct(Product product, String tenantId) {
         product.setSku(generateSku());
         product.setDeleted(false);
+        product.setTenantId(tenantId);
         updateProductStatus(product);
     }
 

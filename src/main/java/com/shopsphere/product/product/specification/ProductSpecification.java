@@ -2,6 +2,7 @@ package com.shopsphere.product.product.specification;
 
 import com.shopsphere.product.product.dto.request.ProductSearchRequestDto;
 import com.shopsphere.product.product.entity.Product;
+import com.shopsphere.product.tenant.context.TenantContext;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -13,6 +14,9 @@ public class ProductSpecification {
     public static Specification<Product> filter(ProductSearchRequestDto searchRequest) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            String tenantId = TenantContext.requireTenantId();
+            predicates.add(cb.equal(root.get("tenantId"), tenantId));
 
             if (StringUtils.hasText(searchRequest.getName())) {
                 predicates.add(
