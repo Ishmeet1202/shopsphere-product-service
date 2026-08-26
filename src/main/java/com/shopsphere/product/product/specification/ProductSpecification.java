@@ -15,10 +15,8 @@ public class ProductSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            String tenantId = TenantContext.getCurrentTenant();
-            if (StringUtils.hasText(tenantId)) {
-                predicates.add(cb.equal(root.get("tenantId"), tenantId));
-            }
+            String tenantId = TenantContext.requireTenantId();
+            predicates.add(cb.equal(root.get("tenantId"), tenantId));
 
             if (StringUtils.hasText(searchRequest.getName())) {
                 predicates.add(

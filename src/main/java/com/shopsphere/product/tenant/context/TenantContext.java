@@ -1,7 +1,9 @@
 package com.shopsphere.product.tenant.context;
 
+import com.shopsphere.product.exception.MissingTenantContextException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TenantContext {
@@ -11,8 +13,18 @@ public final class TenantContext {
         CURRENT_TENANT.set(id);
     }
 
-    public static String getCurrentTenant() {
+    private static String getCurrentTenant() {
         return CURRENT_TENANT.get();
+    }
+
+    public static String requireTenantId() {
+        String tenantId = getCurrentTenant();
+
+        if (!StringUtils.hasText(tenantId)) {
+            throw new MissingTenantContextException("Tenant context is missing.");
+        }
+
+        return tenantId;
     }
 
     public static void clear() {

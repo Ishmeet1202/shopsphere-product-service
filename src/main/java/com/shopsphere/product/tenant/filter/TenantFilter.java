@@ -21,6 +21,8 @@ public class TenantFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantFilter.class);
     private static final String TENANT_HEADER = "X-Tenant-Id";
+    private static final String HEALTH_CHECK_URI = "/api/v1/health";
+
     private final HandlerExceptionResolver exceptionResolver;
 
     public TenantFilter(
@@ -56,5 +58,10 @@ public class TenantFilter extends OncePerRequestFilter {
         } finally {
             TenantContext.clear();
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return request.getRequestURI().equalsIgnoreCase(HEALTH_CHECK_URI);
     }
 }

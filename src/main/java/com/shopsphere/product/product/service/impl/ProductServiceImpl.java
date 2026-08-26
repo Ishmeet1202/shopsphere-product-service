@@ -45,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto createProduct(ProductCreateRequestDto request) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         LOGGER.info("createProduct: name={}, brand={}, category={}, tenantId={}", request.getName(), request.getBrand(), request.getCategory(), tenantId);
         Product product = productMapper.toProductEntity(request);
 
@@ -62,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
             key = "T(com.shopsphere.product.tenant.cache.TenantCacheKey).product(#id)"
     )
     public ProductResponseDto getProductById(String id) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         Product product = productRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
 
@@ -78,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
             String sortBy,
             String direction
     ) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         LOGGER.info("getAllProducts: page={}, size={}, sortBy={}, direction={}, tenantId={}", page, size, sortBy, direction, tenantId);
         String fieldName = sortBy.toLowerCase();
 
@@ -106,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponseDto<ProductResponseDto> searchProducts(ProductSearchRequestDto searchRequest) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         LOGGER.info("searchProducts: name={}, page={}, size={}, sortBy={}, direction={}, tenantId={}", searchRequest.getName(), searchRequest.getPage(), searchRequest.getSize(), searchRequest.getSortBy(), searchRequest.getDirection(), tenantId);
         String fieldName = searchRequest.getSortBy().toLowerCase();
 
@@ -141,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
             key = "T(com.shopsphere.product.tenant.cache.TenantCacheKey).product(#id)"
     )
     public ProductResponseDto updateProduct(String id, ProductCreateRequestDto request) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         LOGGER.info("updateProduct called id={}, name={}, tenantId={}", id, request.getName(), tenantId);
         Product product = productRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));
@@ -162,7 +162,7 @@ public class ProductServiceImpl implements ProductService {
     )
     @Transactional
     public void deleteProduct(String id) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         LOGGER.info("deleteProduct called id={}, tenantId={}", id, tenantId);
         Product product = productRepository.findByIdAndTenantIdAndDeletedFalse(id, tenantId)
                 .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND_MESSAGE + id));

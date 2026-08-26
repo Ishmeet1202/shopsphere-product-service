@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 public final class TenantCacheKey {
 
     public static String product(String productId) {
-        String tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.requireTenantId();
         return tenantId + ":" + productId;
     }
 }
