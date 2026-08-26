@@ -19,6 +19,7 @@ public class GlobalExceptionHandler {
     private final static String INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
     private final static String PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND";
     private final static String INVALID_SORTING_FIELD = "INVALID_SORTING_FIELD";
+    private final static String MISSING_TENANT_CONTEXT = "MISSING_TENANT_CONTEXT";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleMethodArgumentNotValid(
@@ -50,6 +51,22 @@ public class GlobalExceptionHandler {
                         LocalDateTime.now(),
                         HttpStatus.NOT_FOUND.value(),
                         PRODUCT_NOT_FOUND,
+                        ex.getMessage(),
+                        null,
+                        request
+                ));
+    }
+
+    @ExceptionHandler(MissingTenantContextException.class)
+    public ResponseEntity<ErrorResponseDto> handleMissingTenantContext(
+            MissingTenantContextException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        MISSING_TENANT_CONTEXT,
                         ex.getMessage(),
                         null,
                         request

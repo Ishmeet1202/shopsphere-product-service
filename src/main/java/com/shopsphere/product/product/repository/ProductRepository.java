@@ -11,6 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String>, JpaSpecificationExecutor<Product> {
-    Optional<Product> findByIdAndDeletedFalse(String id);
-    Page<Product> findByDeletedFalse(Pageable pageable);
+    Optional<Product> findByIdAndTenantIdAndDeletedFalse(String id, String tenantId);
+    Page<Product> findByTenantIdAndDeletedFalse(String tenantId, Pageable pageable);
 }
